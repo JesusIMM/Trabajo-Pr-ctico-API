@@ -1,24 +1,19 @@
 let API_KEY = "iwvkEolH9NDAvEANy7mAWVZkR6VKaRgKNxlLZ0As"
 let URL_BASE = "https://api.nasa.gov/planetary/apod"
-
 let resultado = document.getElementById("resultado")
 let mensaje = document.getElementById("mensaje")
-
 let btnHoy = document.getElementById("btnHoy")
 let btnFecha = document.getElementById("btnFecha")
 let btnAleatorias = document.getElementById("btnAleatorias")
 let btnRango = document.getElementById("btnRango")
-
 let fechaInput = document.getElementById("fecha")
 let fechaInicioInput = document.getElementById("fechaInicio")
 let fechaFinInput = document.getElementById("fechaFin")
 let cantidadInput = document.getElementById("cantidad")
-
 let hoy = new Date().toISOString().split("T")[0]
 fechaInput.max = hoy
 fechaInicioInput.max = hoy
 fechaFinInput.max = hoy
-
 function mostrarMensaje(texto, tipo = "info") {
     mensaje.textContent = texto
 
@@ -28,11 +23,9 @@ function mostrarMensaje(texto, tipo = "info") {
         mensaje.style.color = "#b36b00"
     }
 }
-
 function limpiarMensaje() {
     mensaje.textContent = ""
 }
-
 function mostrarCarga() {
     resultado.innerHTML = `
         <div class="card">
@@ -43,7 +36,6 @@ function mostrarCarga() {
         </div>
     `
 }
-
 function crearTarjeta(item) {
     let media
 
@@ -64,12 +56,10 @@ function crearTarjeta(item) {
         </article>
     `
 }
-
 function renderizarDatos(datos) {
     let lista = Array.isArray(datos) ? datos : [datos]
     resultado.innerHTML = lista.map(crearTarjeta).join("")
 }
-
 async function consultarAPOD(params = {}) {
     let url = new URL(URL_BASE)
     url.searchParams.set("api_key", API_KEY)
@@ -79,19 +69,14 @@ async function consultarAPOD(params = {}) {
             url.searchParams.set(clave, valor)
         }
     })
-
     mostrarCarga()
-
     let respuesta = await fetch(url.toString())
     let datos = await respuesta.json()
-
     if (!respuesta.ok) {
         throw new Error(datos.msg || "Error al consultar la API.")
     }
-
     return datos
 }
-
 async function obtenerFotoDelDia() {
     try {
         limpiarMensaje()
@@ -103,7 +88,6 @@ async function obtenerFotoDelDia() {
         mostrarMensaje(error.message, "error")
     }
 }
-
 async function obtenerPorFecha() {
     let fecha = fechaInput.value
 
@@ -111,12 +95,10 @@ async function obtenerPorFecha() {
         mostrarMensaje("Seleccioná una fecha.", "error")
         return
     }
-
     if (fecha > hoy) {
         mostrarMensaje("La fecha no puede ser futura.", "error")
         return
     }
-
     try {
         limpiarMensaje()
         let datos = await consultarAPOD({ date: fecha })
@@ -127,7 +109,6 @@ async function obtenerPorFecha() {
         mostrarMensaje(error.message, "error")
     }
 }
-
 async function obtenerAleatorias() {
     let cantidad = Number(cantidadInput.value)
 
@@ -135,7 +116,6 @@ async function obtenerAleatorias() {
         mostrarMensaje("La cantidad debe estar entre 1 y 10.", "error")
         return
     }
-
     try {
         limpiarMensaje()
         let datos = await consultarAPOD({ count: cantidad })
@@ -146,26 +126,21 @@ async function obtenerAleatorias() {
         mostrarMensaje(error.message, "error")
     }
 }
-
 async function obtenerRango() {
     let inicio = fechaInicioInput.value
     let fin = fechaFinInput.value
-
     if (!inicio || !fin) {
         mostrarMensaje("Seleccioná fecha de inicio y fecha de fin.", "error")
         return
     }
-
     if (inicio > fin) {
         mostrarMensaje("La fecha de inicio no puede ser mayor que la de fin.", "error")
         return
     }
-
     if (inicio > hoy || fin > hoy) {
         mostrarMensaje("No se permiten fechas futuras.", "error")
         return
     }
-
     try {
         limpiarMensaje()
         let datos = await consultarAPOD({
@@ -180,10 +155,8 @@ async function obtenerRango() {
         mostrarMensaje(error.message, "error")
     }
 }
-
 btnHoy.addEventListener("click", obtenerFotoDelDia)
 btnFecha.addEventListener("click", obtenerPorFecha)
 btnAleatorias.addEventListener("click", obtenerAleatorias)
 btnRango.addEventListener("click", obtenerRango)
-
 obtenerFotoDelDia()
