@@ -1,75 +1,55 @@
-let API_KEY = "iwvkEolH9NDAvEANy7mAWVZkR6VKaRgKNxlLZ0As"
-let URL_BASE = "https://api.nasa.gov/planetary/apod"
+let apikey = "iwvkEolH9NDAvEANy7mAWVZkR6VKaRgKNxlLZ0As"
+let urlbase = "https://api.nasa.gov/planetary/apod"
 let resultado = document.getElementById("resultado")
 let mensaje = document.getElementById("mensaje")
-let btnHoy = document.getElementById("btnHoy")
-let btnFecha = document.getElementById("btnFecha")
-let btnAleatorias = document.getElementById("btnAleatorias")
-let btnRango = document.getElementById("btnRango")
-let fechaInput = document.getElementById("fecha")
-let fechaInicioInput = document.getElementById("fechaInicio")
-let fechaFinInput = document.getElementById("fechaFin")
-let cantidadInput = document.getElementById("cantidad")
+let botonhoy = document.getElementById("btnHoy")
+let botonfecha = document.getElementById("btnFecha")
+let botonaleatorias = document.getElementById("btnAleatorias")
+let botonrango = document.getElementById("btnRango")
+let inputfecha = document.getElementById("fecha")
+let inputfechainicio = document.getElementById("fechaInicio")
+let inputfechafin = document.getElementById("fechaFin")
+let inputcantidad = document.getElementById("cantidad")
 let hoy = new Date().toISOString().split("T")[0]
-fechaInput.max = hoy
-fechaInicioInput.max = hoy
-fechaFinInput.max = hoy
-function mostrarMensaje(texto, tipo = "info") {
+inputfecha.max = hoy
+inputfechainicio.max = hoy
+inputfechafin.max = hoy
+function mostrarmensaje(texto, tipo = "info") {
     mensaje.textContent = texto
-
     if (tipo === "error") {
         mensaje.style.color = "#c0392b"
     } else {
         mensaje.style.color = "#b36b00"
     }
 }
-function limpiarMensaje() {
+function limpiarmensaje() {
     mensaje.textContent = ""
 }
-function mostrarCarga() {
-    resultado.innerHTML = `
-        <div class="card">
-            <div class="card-content">
-                <h2>Cargando...</h2>
-                <p class="date">Consultando la API de NASA</p>
-            </div>
-        </div>
-    `
+function mostrarcarga() {
+    resultado.innerHTML = `<div class="card"><div class="card-content"><h2>Cargando...</h2><p class="date">Consultando la API de NASA</p></div></div>`
 }
-function crearTarjeta(item) {
+function creartarjeta(item) {
     let media
-
     if (item.media_type === "image") {
         media = `<img src="${item.url}" alt="${item.title}">`
     } else {
         media = `<iframe src="${item.url}" allowfullscreen title="${item.title}"></iframe>`
     }
-
-    return `
-        <article class="card">
-            ${media}
-            <div class="card-content">
-                <h2>${item.title}</h2>
-                <div class="date">${item.date}</div>
-                <p>${item.explanation}</p>
-            </div>
-        </article>
-    `
+    return `<article class="card">${media}<div class="card-content"><h2>${item.title}</h2><div class="date">${item.date}</div><p>${item.explanation}</p></div></article>`
 }
-function renderizarDatos(datos) {
+function renderizardatos(datos) {
     let lista = Array.isArray(datos) ? datos : [datos]
-    resultado.innerHTML = lista.map(crearTarjeta).join("")
+    resultado.innerHTML = lista.map(creartarjeta).join("")
 }
-async function consultarAPOD(params = {}) {
-    let url = new URL(URL_BASE)
-    url.searchParams.set("api_key", API_KEY)
-
+async function consultarapod(params = {}) {
+    let url = new URL(urlbase)
+    url.searchParams.set("api_key", apikey)
     Object.entries(params).forEach(([clave, valor]) => {
         if (valor !== undefined && valor !== null && valor !== "") {
             url.searchParams.set(clave, valor)
         }
     })
-    mostrarCarga()
+    mostrarcarga()
     let respuesta = await fetch(url.toString())
     let datos = await respuesta.json()
     if (!respuesta.ok) {
@@ -77,86 +57,80 @@ async function consultarAPOD(params = {}) {
     }
     return datos
 }
-async function obtenerFotoDelDia() {
+async function obtenerfotodeldia() {
     try {
-        limpiarMensaje()
-        let datos = await consultarAPOD()
-        renderizarDatos(datos)
-        mostrarMensaje("Mostrando la foto del día.")
+        limpiarmensaje()
+        let datos = await consultarapod()
+        renderizardatos(datos)
+        mostrarmensaje("Mostrando la foto del día.")
     } catch (error) {
         resultado.innerHTML = ""
-        mostrarMensaje(error.message, "error")
+        mostrarmensaje(error.message, "error")
     }
 }
-async function obtenerPorFecha() {
-    let fecha = fechaInput.value
-
+async function obtenerporfecha() {
+    let fecha = inputfecha.value
     if (!fecha) {
-        mostrarMensaje("Seleccioná una fecha.", "error")
+        mostrarmensaje("Seleccioná una fecha.", "error")
         return
     }
     if (fecha > hoy) {
-        mostrarMensaje("La fecha no puede ser futura.", "error")
+        mostrarmensaje("La fecha no puede ser futura.", "error")
         return
     }
     try {
-        limpiarMensaje()
-        let datos = await consultarAPOD({ date: fecha })
-        renderizarDatos(datos)
-        mostrarMensaje(`Mostrando la foto del ${fecha}.`)
+        limpiarmensaje()
+        let datos = await consultarapod({ date: fecha })
+        renderizardatos(datos)
+        mostrarmensaje(`Mostrando la foto del ${fecha}.`)
     } catch (error) {
         resultado.innerHTML = ""
-        mostrarMensaje(error.message, "error")
+        mostrarmensaje(error.message, "error")
     }
 }
-async function obtenerAleatorias() {
-    let cantidad = Number(cantidadInput.value)
-
+async function obteneraleatorias() {
+    let cantidad = Number(inputcantidad.value)
     if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 10) {
-        mostrarMensaje("La cantidad debe estar entre 1 y 10.", "error")
+        mostrarmensaje("La cantidad debe estar entre 1 y 10.", "error")
         return
     }
     try {
-        limpiarMensaje()
-        let datos = await consultarAPOD({ count: cantidad })
-        renderizarDatos(datos)
-        mostrarMensaje(`Mostrando ${cantidad} foto(s) aleatoria(s).`)
+        limpiarmensaje()
+        let datos = await consultarapod({ count: cantidad })
+        renderizardatos(datos)
+        mostrarmensaje(`Mostrando ${cantidad} foto(s) aleatoria(s).`)
     } catch (error) {
         resultado.innerHTML = ""
-        mostrarMensaje(error.message, "error")
+        mostrarmensaje(error.message, "error")
     }
 }
-async function obtenerRango() {
-    let inicio = fechaInicioInput.value
-    let fin = fechaFinInput.value
+async function obtenerrango() {
+    let inicio = inputfechainicio.value
+    let fin = inputfechafin.value
     if (!inicio || !fin) {
-        mostrarMensaje("Seleccioná fecha de inicio y fecha de fin.", "error")
+        mostrarmensaje("Seleccioná fecha de inicio y fecha de fin.", "error")
         return
     }
     if (inicio > fin) {
-        mostrarMensaje("La fecha de inicio no puede ser mayor que la de fin.", "error")
+        mostrarmensaje("La fecha de inicio no puede ser mayor que la de fin.", "error")
         return
     }
     if (inicio > hoy || fin > hoy) {
-        mostrarMensaje("No se permiten fechas futuras.", "error")
+        mostrarmensaje("No se permiten fechas futuras.", "error")
         return
     }
     try {
-        limpiarMensaje()
-        let datos = await consultarAPOD({
-            start_date: inicio,
-            end_date: fin
-        })
-
-        renderizarDatos(datos)
-        mostrarMensaje(`Mostrando fotos entre ${inicio} y ${fin}.`)
+        limpiarmensaje()
+        let datos = await consultarapod({ start_date: inicio, end_date: fin })
+        renderizardatos(datos)
+        mostrarmensaje(`Mostrando fotos entre ${inicio} y ${fin}.`)
     } catch (error) {
         resultado.innerHTML = ""
-        mostrarMensaje(error.message, "error")
+        mostrarmensaje(error.message, "error")
     }
 }
-btnHoy.addEventListener("click", obtenerFotoDelDia)
-btnFecha.addEventListener("click", obtenerPorFecha)
-btnAleatorias.addEventListener("click", obtenerAleatorias)
-btnRango.addEventListener("click", obtenerRango)
-obtenerFotoDelDia()
+botonhoy.addEventListener("click", obtenerfotodeldia)
+botonfecha.addEventListener("click", obtenerporfecha)
+botonaleatorias.addEventListener("click", obteneraleatorias)
+botonrango.addEventListener("click", obtenerrango)
+obtenerfotodeldia()
